@@ -38,6 +38,7 @@
     var endpoint = wsStart + loc.host + '/ws/draw';
     var socket = new WebSocket(endpoint);
     var all_points = []
+    var params = Object.fromEntries(new URLSearchParams(loc.search))
    
 
     tool.onMouseMove = function(event) { //http://paperjs.org/reference/tool/ path examples
@@ -48,6 +49,7 @@
            \"y\" : ${event.point.y}, 
            \"uid\" : ${uid}
            }`);
+        path.add(event.point)
     }
 
     socket.onmessage = function(receivedMessage) {
@@ -55,7 +57,10 @@
         // console.log("Received: " + JSON.stringify(rec));
         // console.log(rec.x, rec.y)
         // You will probably want to add some code here to draw more lines.
-        path.add([rec.x, rec.y])
+        console.log(params)
+        if (params.size != 'small') {
+            path.add([rec.x, rec.y])
+        }
     }
 
     socket.onclose = function(e) {
