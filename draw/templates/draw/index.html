@@ -32,6 +32,7 @@
     var loc = window.location;
     var wsStart = 'ws://'
     var all_events = [] 
+
     if (loc.protocol == 'https:') {
         wsStart = 'wss://'
     }
@@ -49,17 +50,16 @@
            \"y\" : ${event.point.y}, 
            \"uid\" : ${uid}
            }`);
-        path.add(event.point)
+        // path.add(event.point)
     }
 
     socket.onmessage = function(receivedMessage) {
         var rec = JSON.parse(receivedMessage.data);
         // console.log("Received: " + JSON.stringify(rec));
-        // console.log(rec.x, rec.y)
+        console.log(rec.x, rec.y)
         // You will probably want to add some code here to draw more lines.
-        console.log(params)
         if (params.size != 'small') {
-            path.add([rec.x, rec.y])
+            path.add([rec.x, rec.y]);
         }
     }
 
