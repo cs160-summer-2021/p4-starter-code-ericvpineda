@@ -6,8 +6,7 @@ class DrawConsumer(WebsocketConsumer):
     def connect(self):
         # Join room group
         async_to_sync(self.channel_layer.group_add)(
-            'all',
-            self.channel_name
+            'all', self.channel_name
         )
 
         self.accept()
@@ -15,8 +14,7 @@ class DrawConsumer(WebsocketConsumer):
     def disconnect(self, close_code):
         # Leave room group
         async_to_sync(self.channel_layer.group_discard)(
-            'all',
-            self.channel_name
+            'all', self.channel_name
         )
 
     # Receive message from WebSocket
