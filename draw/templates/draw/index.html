@@ -19,14 +19,16 @@
     <canvas id="myCanvas" width="750px" height="750px"></canvas>
 </body>
 <script>
-
     // setting up the canvas and one paper tool
     var canvas = document.getElementById('myCanvas');
     paper.setup(canvas);
     var tool = new paper.Tool();
-    var path = new paper.Path();
+    //var path = new paper.Path();
+    var playerList = [];
     var uid = Date.now() % 10000;
-    path.strokeColor = "red";
+    //playerList.push(uid);
+    var strokeColor = getRandomColor();
+    //path.strokeColor = "#" + strokeColor;
 
     // getting the URL (you may want to use for Exercise 3)
     var loc = window.location;
@@ -40,27 +42,72 @@
     var socket = new WebSocket(endpoint);
     var all_points = []
     var params = Object.fromEntries(new URLSearchParams(loc.search))
+
+    function getRandomColor(){
+        const randomColor = Math.floor(Math.random()*16777215).toString(16);
+        return (randomColor);
+    }
+
+
+    var all_paths = [];
+    
    
 
     tool.onMouseMove = function(event) { //http://paperjs.org/reference/tool/ path examples
-       // path.add(event.point) 
+       //path.add(event.point) 
+       //console.log(uid, currentUid, pastUid)
+       console.log("the player list is " + playerList);
+       //console.log(uid);
+       
+
+       
+
        // You may need to add code here if you want to pass any other information.
-       socket.send(`{
-           \"x\" : ${event.point.x}, 
-           \"y\" : ${event.point.y}, 
-           \"uid\" : ${uid}
-           }`);
-        // path.add(event.point)
+       socket.send("{ \"x\" : "+ event.point.x +", \"y\" : "+ event.point.y +", \"uid\" : "+ uid +", \"color\" : \"" + strokeColor.toString() +"\" }");
+        
     }
 
     socket.onmessage = function(receivedMessage) {
         var rec = JSON.parse(receivedMessage.data);
-        // console.log("Received: " + JSON.stringify(rec));
-        console.log(rec.x, rec.y)
-        // You will probably want to add some code here to draw more lines.
-        if (params.size != 'small') {
-            path.add([rec.x, rec.y]);
+        var exists = false;
+        all_paths.forEach(existingPath => {
+                if (existingPath.uid.toString() == rec.uid.toString()){
+                    //console.log("exists is true!")
+                    console.log("IN FOR EACH : uid is " + existingPath.uid + "stroke color is " + existingPath.strokeColor + " path is " + existingPath.path)
+                    exists = true;
+                    console.log(rec.color)
+                    existingPath.path.strokeColor = "#" + rec.color;
+                    existingPath.path.add([rec.x, rec.y]);
+                }
+            });
+        if (!exists){
+            console.log("exists is false!")
+            playerList.push(rec.uid);
+            var tool = new paper.Tool();
+            var newPath = new paper.Path();
+            console.log(" IN NEW PATH CREATION: uid is " + rec.uid + "stroke color is " + strokeColor + " path is " + newPath)
+            var newStrokeColor = getRandomColor();
+            newPath.strokeColor = "#" + newStrokeColor;
+            newPath.add([rec.x, rec.y]);
+            var newPathInfo = {
+                "uid" : rec.uid,
+                "path" : newPath,
+                "strokeColor" : newStrokeColor
+            }
+            all_paths.push(newPathInfo);
         }
+        console.log("all path info " + all_paths);
+        // console.log("Received: " + JSON.stringify(rec));
+        //console.log(rec.x, rec.y)
+        // You will probably want to add some code here to draw more lines.
+        // if (params.size != 'small') {
+            //console.log("uid " + uid);
+            //console.log("rec.uid " + rec.uid);
+            
+            //path.add([rec.x, rec.y]);
+        
+        // }
+        //console.log(uid)
     }
 
     socket.onclose = function(e) {
